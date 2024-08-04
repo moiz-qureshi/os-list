@@ -26,9 +26,16 @@ jobs:
       - name: Scrape GitHub Trending Projects
         run: python scrape_github_trending.py
 
-      - name: Upload HTML report
-        uses: actions/upload-artifact@v3
-        with:
-          name: github-trending-report
-          path: report.html
-          retention-days: 1
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit HTML report
+        run: |
+          git checkout -b gh-pages
+          git add report.html
+          git commit -m "Update GitHub Trending HTML report"
+          git push -u origin gh-pages --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
