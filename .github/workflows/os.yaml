@@ -1,66 +1,51 @@
-name: Daily Trending Projects
+name: Trending Projects Report
 
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
+    branches:
+      - main
 
 jobs:
-  scrape_trending_projects:
+  trend-report:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Install dependencies
         run: |
-          pip install beautifulsoup4 requests
-      - name: Scrape trending projects
+          npm install gh-pages puppeteer
+
+      - name: Login to GitHub API
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          import os
-          from bs4 import BeautifulSoup
-          import requests
+          node login.js
 
-          url = "https://github.com/trending?since=daily"
-          response = requests.get(url)
-          soup = BeautifulSoup(response.content, 'html.parser')
-          trending_projects_div = soup.find('div', {'class': 'Box'})
-          project_data = []
+      - name: Scrape trending projects from GitHub
+        run: |
+          npx puppeteer --headed \
+            --extra-options="--window-size=1200,800" \
+            https://github.com/trending > trending-projects.html
 
-          for project in trending_projects_div.find_all('a'):
-            project_name = project.text.strip()
-            # Commented out the line that tried to find a sibling paragraph
-            # project_description = project.find_next_sibling('p').text.strip()
-            project_url = 'https://github.com' + project.get('href')
+      - name: Generate pretty HTML report
+        run: |
+          npx html-puppeteer-prettier \
+            trending-projects.html > trending-report.html
 
-          html_content = """
-          <html>
-            <head>
-              <title>Trending Projects</title>
-            </head>
-            <body>
-              <h1>Trending Projects</h1>
-              """
-          # Commented out the section that tried to write the HTML content
-          # for project_name, project_description, project_url in project_data:
-          #   html_content += f"""
-          #     <p>{project_name}</p>
-          #     <p>{project_description}</p>
-          #     <p><a href="{project_url}">View on GitHub</a></p>
-          #     <hr />
-          #     """
-          html_content += """
-              </body>
-            </html>
-            """
-
-          with open('.trending_projects.html', 'w') as f:
-            f.write(html_content)
-
-      - name: Upload artifact
+      - name: Upload artifact as HTML report
         uses: actions/upload-artifact@v2
         with:
-          name: trending-projects
-          path: .trending_projects.html
+          name: trending-report.html
+          path: trending-report.html
+
+      - name: Deploy to gh-pages (optional)
+        if: github.event_name == 'push' && github.workflow == 'trend-report'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm install gh-pages
+          npx gh-pages -d ./
+
+      - name: Manual trigger handling
+        uses: actions/manual-trigger@v1
