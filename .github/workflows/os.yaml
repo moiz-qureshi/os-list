@@ -46,6 +46,3 @@ jobs:
         run: |
           npm install gh-pages
           npx gh-pages -d ./
-
-      - name: Manual trigger handling
-        uses: actions/manual-trigger@v1
