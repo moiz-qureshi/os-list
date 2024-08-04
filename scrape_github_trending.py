@@ -44,44 +44,44 @@ def generate_html_report(projects):
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitHub Trending Projects</title>
     <style>
-        body {
+        body {{
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f5f5f5;
-        }
-        .container {
+        }}
+        .container {{
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
             background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
+        }}
+        h1 {{
             text-align: center;
             color: #333333;
-        }
-        .project {
+        }}
+        .project {{
             margin-bottom: 15px;
             padding: 10px;
             border-bottom: 1px solid #dddddd;
-        }
-        .project:last-child {
+        }}
+        .project:last-child {{
             border-bottom: none;
-        }
-        .project-name {
+        }}
+        .project-name {{
             font-size: 18px;
             font-weight: bold;
-        }
-        .project-description {
+        }}
+        .project-description {{
             margin: 5px 0;
             color: #666666;
-        }
-        .project-link {
+        }}
+        .project-link {{
             color: #007bff;
             text-decoration: none;
-        }
+        }}
     </style>
 </head>
 <body>
