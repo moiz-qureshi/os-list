@@ -1,0 +1,84 @@
+name: Daily Trending Projects
+
+on:
+  schedule:
+    - cron: 0 8 * * *
+
+jobs:
+  scrape_trending_projects:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          pip install beautifulsoup4 requests
+      - name: Scrape trending projects
+        run: |
+          import os
+          from bs4 import BeautifulSoup
+          import requests
+
+          url = "https://github.com/trending?since=daily"
+          response = requests.get(url)
+          soup = BeautifulSoup(response.content, 'html.parser')
+          trending_projects_div = soup.find('div', {'class': 'Box'})
+          project_data = []
+
+          for project in trending_projects_div.find_all('a'):
+            project_name = project.text.strip()
+            project_description = project.find_next_sibling('p').text.strip()
+            project_url = 'https://github.com' + project.get('href')
+
+            if (project_name, project_description) not in project_data:
+              project_data.append((project_name, project_description, project_url))
+
+          html_content = """
+            <html>
+              <head>
+                <title>Trending Projects</title>
+                <style>
+                  body {
+                    font-family: Arial, sans-serif;
+                    background-color: #f0f0f0;
+                  }
+                  .container {
+                    max-width: 800px;
+                    margin: 40px auto;
+                    padding: 20px;
+                    background-color: #fff;
+                    border: 1px solid #ddd;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                  }
+                  .project {
+                    margin-bottom: 20px;
+                  }
+                  .project h2 {
+                    font-size: 24px;
+                    margin-top: 0;
+                  }
+                  .project p {
+                    font-size: 18px;
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <h1>Trending Projects</h1>
+                  """
+            for project_name, project_description, project_url in project_data:
+            html_content += f"""
+              <div class="project">
+                <h2>{project_name}</h2>
+                <p>{project_description}</p>
+                <p><a href="{project_url}">View on GitHub</a></p>
+              </div>
+              """
+          html_content += """
+                </div>
+              </body>
+            </html>
+            """
+
+          with open('.trending_projects.html', 'w') as f:
+            f.write(html_content)
