@@ -4,14 +4,25 @@ from bs4 import BeautifulSoup
 def scrape_github_trending():
     url = 'https://github.com/trending?since=daily'
     response = requests.get(url)
+    response.raise_for_status()  # Raises an error for bad responses
     soup = BeautifulSoup(response.content, 'html.parser')
 
     projects = []
     for repo in soup.find_all('article', class_='Box-row'):
         title_tag = repo.find('h1', class_='h3 lh-condensed')
+        if title_tag is None:
+            print("Title tag not found for a project. Skipping...")
+            continue
+
+        link_tag = title_tag.find('a')
+        if link_tag is None:
+            print("Link tag not found for a project. Skipping...")
+            continue
+
+        project_link = link_tag['href'].strip()
+        project_name = link_tag.text.strip()
+        
         description_tag = repo.find('p', class_='col-9 color-fg-muted my-1 pr-4')
-        project_link = title_tag.find('a')['href'].strip()
-        project_name = title_tag.text.strip()
         project_description = description_tag.text.strip() if description_tag else "No description provided"
 
         projects.append({
@@ -97,11 +108,21 @@ def generate_html_report(projects):
     return html_content.format(project_entries=project_entries)
 
 def main():
-    projects = scrape_github_trending()
-    html_report = generate_html_report(projects)
+    try:
+        projects = scrape_github_trending()
+        if not projects:
+            print("No projects found. Please check the page structure or URL.")
+            return
 
-    with open('report.html', 'w', encoding='utf-8') as file:
-        file.write(html_report)
+        html_report = generate_html_report(projects)
+
+        with open('report.html', 'w', encoding='utf-8') as file:
+            file.write(html_report)
+
+        print("HTML report generated successfully.")
+
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while fetching data: {e}")
 
 if __name__ == '__main__':
     main()
