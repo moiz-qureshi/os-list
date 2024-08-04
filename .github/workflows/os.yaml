@@ -1,117 +1,33 @@
-name: Trending Projects Report
+name: Scrape GitHub Trending Projects
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  build:
+  scrape:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v1
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '14'
+          python-version: '3.x'
 
       - name: Install dependencies
-        run: npm install cheerio axios fs
-
-      - name: Scrape trending projects and generate HTML report
         run: |
-          const axios = require('axios');
-          const cheerio = require('cheerio');
-          const fs = require('fs');
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
 
-          async function scrapeTrendingProjects() {
-            try {
-              const response = await axios.get('https://github.com/trending?since=daily');
-              const $ = cheerio.load(response.data);
-              const projects = [];
+      - name: Scrape GitHub Trending Projects
+        run: python scrape_github_trending.py
 
-              $('.Box-row').each((index, element) => {
-                const title = $(element).find('.h3').text().trim();
-                const description = $(element).find('.py-1').text().trim();
-                const link = 'https://github.com' + $(element).find('a').attr('href');
-                projects.push({ title, description, link });
-              });
-
-              return projects;
-            } catch (error) {
-              console.error(error);
-            }
-          }
-
-          async function generateHtmlReport(projects) {
-            let html = `
-              <!DOCTYPE html>
-              <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Trending Projects Report</title>
-                <style>
-                  body {
-                    font-family: Arial, sans-serif;
-                  }
-                  .container {
-                    max-width: 800px;
-                    margin: 40px auto;
-                    padding: 20px;
-                    background-color: #f9f9f9;
-                    border: 1px solid #ddd;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                  }
-                  .project {
-                    margin-bottom: 20px;
-                  }
-                  .project-title {
-                    font-weight: bold;
-                  }
-                  .project-description {
-                    color: #666;
-                  }
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <h1>Trending Projects Report</h1>
-            `;
-            projects.forEach((project) => {
-              html += `
-                <div class="project">
-                  <h2 class="project-title"><a href="${project.link}" target="_blank">${project.title}</a></h2>
-                  <p class="project-description">${project.description}</p>
-                </div>
-              `;
-            });
-            html += `</div></body></html>`;
-            return html;
-          }
-
-          async function run() {
-            const projects = await scrapeTrendingProjects();
-            if (projects) {
-              const html = await generateHtmlReport(projects);
-              fs.writeFileSync('report.html', html);
-            }
-          }
-
-          run().catch((error) => {
-            console.error(error);
-          });
-
-      - name: Upload report as artifact
-        uses: actions/upload-artifact@v2
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v3
         with:
-          name: trending-projects-report
+          name: github-trending-report
           path: report.html
-
-      - name: Display report
-        run: |
-          echo "Report uploaded! You can view it here:"
-          echo "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/trending-projects-report/report.html"
