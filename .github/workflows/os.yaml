@@ -1,6 +1,5 @@
 name: Daily Trending Projects
 
-# Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
@@ -44,45 +43,18 @@ jobs:
             <html>
               <head>
                 <title>Trending Projects</title>
-                <style>
-                  body {
-                    font-family: Arial, sans-serif;
-                    background-color: #f0f0f0;
-                  }
-                  .container {
-                    max-width: 800px;
-                    margin: 40px auto;
-                    padding: 20px;
-                    background-color: #fff;
-                    border: 1px solid #ddd;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                  }
-                  .project {
-                    margin-bottom: 20px;
-                  }
-                  .project h2 {
-                    font-size: 24px;
-                    margin-top: 0;
-                  }
-                  .project p {
-                    font-size: 18px;
-                  }
-                </style>
               </head>
               <body>
-                <div class="container">
-                  <h1>Trending Projects</h1>
-                  """
-            for project_name, project_description, project_url in project_data:
+                <h1>Trending Projects</h1>
+                """
+          for project_name, project_description, project_url in project_data:
             html_content += f"""
-              <div class="project">
-                <h2>{project_name}</h2>
-                <p>{project_description}</p>
-                <p><a href="{project_url}">View on GitHub</a></p>
-              </div>
+              <p>{project_name}</p>
+              <p>{project_description}</p>
+              <p><a href="{project_url}">View on GitHub</a></p>
+              <hr />
               """
           html_content += """
-                </div>
               </body>
             </html>
             """
