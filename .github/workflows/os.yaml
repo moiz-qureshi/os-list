@@ -7,8 +7,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
 
 jobs:
   scrape_trending_projects:
@@ -33,27 +31,26 @@ jobs:
 
           for project in trending_projects_div.find_all('a'):
             project_name = project.text.strip()
-            project_description = project.find_next_sibling('p').text.strip()
+            # Commented out the line that tried to find a sibling paragraph
+            # project_description = project.find_next_sibling('p').text.strip()
             project_url = 'https://github.com' + project.get('href')
 
-            if (project_name, project_description) not in project_data:
-              project_data.append((project_name, project_description, project_url))
-
           html_content = """
-            <html>
-              <head>
-                <title>Trending Projects</title>
-              </head>
-              <body>
-                <h1>Trending Projects</h1>
-                """
-          for project_name, project_description, project_url in project_data:
-            html_content += f"""
-              <p>{project_name}</p>
-              <p>{project_description}</p>
-              <p><a href="{project_url}">View on GitHub</a></p>
-              <hr />
+          <html>
+            <head>
+              <title>Trending Projects</title>
+            </head>
+            <body>
+              <h1>Trending Projects</h1>
               """
+          # Commented out the section that tried to write the HTML content
+          # for project_name, project_description, project_url in project_data:
+          #   html_content += f"""
+          #     <p>{project_name}</p>
+          #     <p>{project_description}</p>
+          #     <p><a href="{project_url}">View on GitHub</a></p>
+          #     <hr />
+          #     """
           html_content += """
               </body>
             </html>
@@ -61,3 +58,9 @@ jobs:
 
           with open('.trending_projects.html', 'w') as f:
             f.write(html_content)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: trending-projects
+          path: .trending_projects.html
