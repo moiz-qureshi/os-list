@@ -1,3 +1,4 @@
+
 name: Trending Projects Report
 
 on:
@@ -15,36 +16,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install lru-cache glob@9 puppeteer
+          npm install lru-cache@7.10.6 glob@9 puppeteer
 
       - name: Scrape trending projects from GitHub
         run: |
           npx puppeteer --headed \
-            --extra-options="--window-size=1200,800" \
             https://github.com/trending > trending-projects.html
 
-      - name: Generate pretty HTML report
-        run: |
-          npx html-puppeteer-prettier \
-            trending-projects.html > trending-report.html
-
-      - name: Upload artifact as HTML report
-        uses: actions/upload-artifact@v2
-        with:
-          name: trending-report.html
-          path: trending-report.html
-
-      # Commented out for now to avoid the login.js error
-      #- name: Login to GitHub API
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  run: |
-      #    node login.js
-
-      - name: Deploy to gh-pages (optional)
-        if: github.event_name == 'push' && github.workflow == 'trend-report'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npm install gh-pages
-          npx gh-pages -d ./
+      - name: Generate pretty HTML report (using 
