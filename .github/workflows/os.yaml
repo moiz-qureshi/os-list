@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   trend-report:
@@ -14,13 +15,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install gh-pages puppeteer
-
-      - name: Login to GitHub API
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          node login.js
+          npm install lru-cache glob@9 puppeteer
 
       - name: Scrape trending projects from GitHub
         run: |
@@ -38,6 +33,13 @@ jobs:
         with:
           name: trending-report.html
           path: trending-report.html
+
+      # Commented out for now to avoid the login.js error
+      #- name: Login to GitHub API
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  run: |
+      #    node login.js
 
       - name: Deploy to gh-pages (optional)
         if: github.event_name == 'push' && github.workflow == 'trend-report'
