@@ -9,7 +9,8 @@ def scrape_github_trending():
 
     projects = []
     for repo in soup.find_all('article', class_='Box-row'):
-        title_tag = repo.find('h1', class_='h3 lh-condensed')
+        # Locate the title tag
+        title_tag = repo.find('h2', class_='h3 lh-condensed')
         if title_tag is None:
             print("Title tag not found for a project. Skipping...")
             continue
@@ -21,7 +22,8 @@ def scrape_github_trending():
 
         project_link = link_tag['href'].strip()
         project_name = link_tag.text.strip()
-        
+
+        # Locate the description tag
         description_tag = repo.find('p', class_='col-9 color-fg-muted my-1 pr-4')
         project_description = description_tag.text.strip() if description_tag else "No description provided"
 
