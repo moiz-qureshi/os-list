@@ -31,3 +31,4 @@ jobs:
         with:
           name: github-trending-report
           path: report.html
+          retention-days: 1
